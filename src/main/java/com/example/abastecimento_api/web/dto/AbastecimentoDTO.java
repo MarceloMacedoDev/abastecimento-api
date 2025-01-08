@@ -2,25 +2,32 @@ package com.example.abastecimento_api.web.dto;
 
 import java.time.LocalDateTime;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class AbastecimentoDTO {
     private Long id;
     private String placa;
     private double quilometragem;
     private LocalDateTime dataHora;
     private double valorTotal;
+
+    public AbastecimentoDTO() {
+    }
+
+    public AbastecimentoDTO(Long id, String placa, double quilometragem, LocalDateTime dataHora, double valorTotal) {
+        this.id = id;
+        this.placa = placa;
+        this.quilometragem = quilometragem;
+        this.dataHora = dataHora;
+        this.valorTotal = valorTotal;
+    }
 
     public Long getId() {
         return id;
