@@ -103,6 +103,13 @@
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<locale>pt_BR</locale>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

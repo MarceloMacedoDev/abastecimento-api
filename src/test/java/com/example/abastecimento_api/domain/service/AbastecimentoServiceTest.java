@@ -1,18 +1,30 @@
 package com.example.abastecimento_api.domain.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import com.example.abastecimento_api.domain.entity.Abastecimento;
 import com.example.abastecimento_api.domain.exceptions.FuelingValidationException;
@@ -29,9 +41,9 @@ public class AbastecimentoServiceTest {
 
     @Test
     void testListarTodos_empty() {
-        List<Abastecimento> abastecimentos = new ArrayList<>();
-        when(abastecimentoRepository.findAll()).thenReturn(abastecimentos);
-        assertEquals(abastecimentos, abastecimentoService.listarTodos());
+        Page<Abastecimento> abastecimentos = new PageImpl<>(new ArrayList<>());
+        when(abastecimentoRepository.findAll(any(Pageable.class))).thenReturn(abastecimentos);
+        assertEquals(abastecimentos, abastecimentoService.listarTodos(PageRequest.of(0, 10)));
     }
 
     @Test
@@ -40,23 +52,25 @@ public class AbastecimentoServiceTest {
         a1.setId(1L);
         Abastecimento a2 = new Abastecimento();
         a2.setId(2L);
-        List<Abastecimento> abastecimentos = List.of(a1, a2);
-        when(abastecimentoRepository.findAll()).thenReturn(abastecimentos);
-        assertEquals(abastecimentos, abastecimentoService.listarTodos());
+        Page<Abastecimento> abastecimentos = new PageImpl<>(List.of(a1, a2));
+        when(abastecimentoRepository.findAll(any(Pageable.class))).thenReturn(abastecimentos);
+        assertEquals(abastecimentos, abastecimentoService.listarTodos(PageRequest.of(0, 10)));
     }
 
     @Test
     void testListarPorPlaca_validPlaca() {
         String placa = "ABC-1234";
-        List<Abastecimento> abastecimentos = new ArrayList<>();
-        when(abastecimentoRepository.findByPlaca(placa)).thenReturn(abastecimentos);
-        assertEquals(abastecimentos, abastecimentoService.listarPorPlaca(placa));
+        Page<Abastecimento> abastecimentos = new PageImpl<>(new ArrayList<>());
+        when(abastecimentoRepository.findByPlaca(any(Pageable.class), eq(placa))).thenReturn(abastecimentos);
+        assertEquals(abastecimentos, abastecimentoService.listarPorPlaca(PageRequest.of(0, 10), placa));
     }
 
     @Test
     void testListarPorPlaca_invalidPlaca() {
-        assertThrows(FuelingValidationException.class, () -> abastecimentoService.listarPorPlaca(null));
-        assertThrows(FuelingValidationException.class, () -> abastecimentoService.listarPorPlaca(""));
+        assertThrows(FuelingValidationException.class,
+                () -> abastecimentoService.listarPorPlaca(PageRequest.of(0, 10), null));
+        assertThrows(FuelingValidationException.class,
+                () -> abastecimentoService.listarPorPlaca(PageRequest.of(0, 10), ""));
     }
 
     @Test

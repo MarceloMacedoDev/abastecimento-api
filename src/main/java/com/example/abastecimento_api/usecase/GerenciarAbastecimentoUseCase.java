@@ -1,9 +1,11 @@
 package com.example.abastecimento_api.usecase;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.abastecimento_api.domain.entity.Abastecimento;
@@ -20,14 +22,20 @@ public class GerenciarAbastecimentoUseCase {
     @Autowired
     private AbastecimentoMapper abastecimentoMapper;
 
-    public List<AbastecimentoDTO> listarAbastecimentos(String placa) {
-        List<Abastecimento> abastecimentos;
+    public Page<AbastecimentoDTO> listarAbastecimentos(String placa, Pageable pageable) {
+        Page<Abastecimento> abastecimentos;
         if (placa != null && !placa.isEmpty()) {
-            abastecimentos = abastecimentoService.listarPorPlaca(placa);
+            abastecimentos = abastecimentoService.listarPorPlaca(pageable, placa);
         } else {
-            abastecimentos = abastecimentoService.listarTodos();
+            abastecimentos = abastecimentoService.listarTodos(pageable);
         }
-        return abastecimentoMapper.toDTOs(abastecimentos);
+
+        return new PageImpl<>(
+                abastecimentos.getContent().stream()
+                        .map(abastecimentoMapper::toDTO)
+                        .toList(),
+                pageable,
+                abastecimentos.getTotalElements());
     }
 
     public AbastecimentoDTO adicionarAbastecimento(AbastecimentoDTO abastecimentoDTO) {

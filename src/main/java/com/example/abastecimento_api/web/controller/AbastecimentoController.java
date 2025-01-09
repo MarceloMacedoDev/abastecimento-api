@@ -1,7 +1,7 @@
 package com.example.abastecimento_api.web.controller;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,9 +28,14 @@ public class AbastecimentoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<AbastecimentoDTO>> listarAbastecimentos(@RequestParam(required = false) String placa) {
+    public ResponseEntity<Page<AbastecimentoDTO>> listarAbastecimentos(
+            @RequestParam(required = false) String placa,
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "10") int tamanhoPagina) {
+        final Page<AbastecimentoDTO> response = abastecimentoService.listarAbastecimentos(placa,
+                PageRequest.of(pagina, tamanhoPagina));
 
-        return ResponseEntity.ok(abastecimentoService.listarAbastecimentos(placa));
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping

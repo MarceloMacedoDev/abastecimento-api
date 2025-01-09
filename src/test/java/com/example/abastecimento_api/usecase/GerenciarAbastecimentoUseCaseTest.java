@@ -1,24 +1,32 @@
 package com.example.abastecimento_api.usecase;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import com.example.abastecimento_api.domain.entity.Abastecimento;
+import com.example.abastecimento_api.domain.exceptions.IllegalArgumentException;
 import com.example.abastecimento_api.domain.service.AbastecimentoService;
 import com.example.abastecimento_api.infrastructure.mapper.AbastecimentoMapper;
 import com.example.abastecimento_api.web.dto.AbastecimentoDTO;
-import  com.example.abastecimento_api.domain.exceptions.IllegalArgumentException;
 
 @ExtendWith(MockitoExtension.class)
 public class GerenciarAbastecimentoUseCaseTest {
@@ -34,18 +42,20 @@ public class GerenciarAbastecimentoUseCaseTest {
     @Test
     void listarAbastecimentos_semPlaca() {
         // Arrange
-        List<Abastecimento> abastecimentos = new ArrayList<>();
-        List<AbastecimentoDTO> abastecimentosDTO = new ArrayList<>();
-        when(abastecimentoService.listarTodos()).thenReturn(abastecimentos);
-        when(abastecimentoMapper.toDTOs(abastecimentos)).thenReturn(abastecimentosDTO);
+        Page<Abastecimento> abastecimentos = new PageImpl<>(new ArrayList<>());
+        Page<AbastecimentoDTO> abastecimentosDTO = new PageImpl<>(new ArrayList<>());
+
+        when(abastecimentoService.listarTodos(any(Pageable.class))).thenReturn(abastecimentos);
+        when(abastecimentoMapper.toDTOs(abastecimentos.getContent())).thenReturn(abastecimentosDTO.getContent());
 
         // Act
-        List<AbastecimentoDTO> resultado = gerenciarAbastecimentoUseCase.listarAbastecimentos(null);
+        Page<AbastecimentoDTO> resultado = gerenciarAbastecimentoUseCase.listarAbastecimentos(null,
+                PageRequest.of(0, 10));
 
         // Assert
         assertEquals(abastecimentosDTO, resultado);
-        verify(abastecimentoService).listarTodos();
-        verify(abastecimentoMapper).toDTOs(abastecimentos);
+        verify(abastecimentoService).listarTodos(any(Pageable.class));
+        verify(abastecimentoMapper).toDTOs(abastecimentos.getContent());
     }
 
     @Test
@@ -97,53 +107,59 @@ public class GerenciarAbastecimentoUseCaseTest {
         verify(abastecimentoService).remover(id);
     }
 
-
     @Test
     void listarAbastecimentos_placaValida() {
         String placa = "ABC-1234";
-        List<Abastecimento> abastecimentos = List.of(new Abastecimento());
-        List<AbastecimentoDTO> abastecimentosDTO = List.of(new AbastecimentoDTO());
+        Abastecimento abastecimento = new Abastecimento();
+        AbastecimentoDTO abastecimentoDTO = new AbastecimentoDTO();
+        Page<Abastecimento> abastecimentos = new PageImpl<>(List.of(abastecimento));
+        Page<AbastecimentoDTO> abastecimentosDTO = new PageImpl<>(List.of(abastecimentoDTO));
 
-        when(abastecimentoService.listarPorPlaca(placa)).thenReturn(abastecimentos);
-        when(abastecimentoMapper.toDTOs(abastecimentos)).thenReturn(abastecimentosDTO);
+        when(abastecimentoService.listarPorPlaca(any(Pageable.class), eq(placa))).thenReturn(abastecimentos);
+        when(abastecimentoMapper.toDTOs(abastecimentos.getContent())).thenReturn(abastecimentosDTO.getContent());
 
-        List<AbastecimentoDTO> resultado = gerenciarAbastecimentoUseCase.listarAbastecimentos(placa);
+        Page<AbastecimentoDTO> resultado = gerenciarAbastecimentoUseCase.listarAbastecimentos(placa,
+                PageRequest.of(0, 10));
 
         assertEquals(abastecimentosDTO, resultado);
-        verify(abastecimentoService).listarPorPlaca(placa);
-        verify(abastecimentoMapper).toDTOs(abastecimentos);
+        verify(abastecimentoService).listarPorPlaca(any(Pageable.class), eq(placa));
+        verify(abastecimentoMapper).toDTOs(abastecimentos.getContent());
     }
 
     @Test
     void listarAbastecimentos_placaNula() {
         String placa = null;
-        List<Abastecimento> abastecimentos = List.of(new Abastecimento());
-        List<AbastecimentoDTO> abastecimentosDTO = List.of(new AbastecimentoDTO());
+        Page<Abastecimento> abastecimentos = new PageImpl<>(List.of(new Abastecimento()));
+        Page<AbastecimentoDTO> abastecimentosDTO = new PageImpl<>(
+                List.of(abastecimentoMapper.toDTO(new Abastecimento())));
 
-        when(abastecimentoService.listarTodos()).thenReturn(abastecimentos);
-        when(abastecimentoMapper.toDTOs(abastecimentos)).thenReturn(abastecimentosDTO);
+        when(abastecimentoService.listarTodos(any(Pageable.class))).thenReturn(abastecimentos);
+        when(abastecimentoMapper.toDTOs(abastecimentos.getContent())).thenReturn(abastecimentosDTO.getContent());
 
-        List<AbastecimentoDTO> resultado = gerenciarAbastecimentoUseCase.listarAbastecimentos(placa);
+        Page<AbastecimentoDTO> resultado = gerenciarAbastecimentoUseCase.listarAbastecimentos(placa,
+                PageRequest.of(0, 10));
 
         assertEquals(abastecimentosDTO, resultado);
-        verify(abastecimentoService).listarTodos();
-        verify(abastecimentoMapper).toDTOs(abastecimentos);
+        verify(abastecimentoService).listarTodos(any(Pageable.class));
+        verify(abastecimentoMapper).toDTOs(abastecimentos.getContent());
     }
 
     @Test
     void listarAbastecimentos_placaVazia() {
         String placa = "";
-        List<Abastecimento> abastecimentos = List.of(new Abastecimento());
-        List<AbastecimentoDTO> abastecimentosDTO = List.of(new AbastecimentoDTO());
+        Page<Abastecimento> abastecimentos = new PageImpl<>(List.of(new Abastecimento()));
+        Page<AbastecimentoDTO> abastecimentosDTO = new PageImpl<>(
+                List.of(abastecimentoMapper.toDTO(new Abastecimento())));
 
-        when(abastecimentoService.listarTodos()).thenReturn(abastecimentos);
-        when(abastecimentoMapper.toDTOs(abastecimentos)).thenReturn(abastecimentosDTO);
+        when(abastecimentoService.listarTodos(any(Pageable.class))).thenReturn(abastecimentos);
+        when(abastecimentoMapper.toDTOs(abastecimentos.getContent())).thenReturn(abastecimentosDTO.getContent());
 
-        List<AbastecimentoDTO> resultado = gerenciarAbastecimentoUseCase.listarAbastecimentos(placa);
+        Page<AbastecimentoDTO> resultado = gerenciarAbastecimentoUseCase.listarAbastecimentos(placa,
+                PageRequest.of(0, 10));
 
         assertEquals(abastecimentosDTO, resultado);
-        verify(abastecimentoService).listarTodos();
-        verify(abastecimentoMapper).toDTOs(abastecimentos);
+        verify(abastecimentoService).listarTodos(any(Pageable.class));
+        verify(abastecimentoMapper).toDTOs(abastecimentos.getContent());
     }
 
     @Test

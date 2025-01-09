@@ -53,7 +53,7 @@ Após a execução do aplicativo, você pode testar os endpoints REST usando uma
 - **GET /abastecimentos:** Retorna uma lista de todos os abastecimentos. Você pode adicionar um parâmetro de consulta placa para filtrar os resultados (ex: /abastecimentos?placa=AAA-1234).
 
 - **POST /abastecimentos:** Adiciona um novo abastecimento. O corpo da requisição deve ser um JSON contendo os dados do abastecimento (placa, quilometragem, dataHora, valorTotal). Exemplo:
-```bash
+```json
 {
   "placa": "AAA-1234",
   "quilometragem": 10000,
@@ -64,12 +64,10 @@ Após a execução do aplicativo, você pode testar os endpoints REST usando uma
 **Validações:** A API realiza validações nos dados de entrada. Erros de validação serão retornados como respostas HTTP apropriadas (provavelmente com código 400 Bad Request e uma mensagem de erro descrevendo o problema).
 
 - **DELETE /abastecimentos/{id}:** Remove um abastecimento específico pelo seu ID.
-
-## Logs
-Os logs da aplicação são configurados para o nível DEBUG para o pacote com.example. Você pode verificar os logs no console para monitorar a execução do aplicativo e depurar problemas.
+ 
 
 ## Testes
-O projeto inclui testes unitários e de integração. Você pode executá-los usando Maven  com **97% de coberture**:
+O projeto inclui testes unitários e de integração. Você pode executá-los usando Maven  com **95% de coberture**:
 ```bash
 mvn test
  ```
